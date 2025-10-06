@@ -33,8 +33,8 @@ fn main() {
     };
 
     // Load configuration
-    let setup_configuration = DocumentDBSetupConfiguration::new(&cfg_file)
-        .expect("Failed to load configuration.");
+    let setup_configuration =
+        DocumentDBSetupConfiguration::new(&cfg_file).expect("Failed to load configuration.");
 
     SimpleLogger::new()
         .with_level(log::LevelFilter::Info)
@@ -55,7 +55,10 @@ fn main() {
         .build()
         .expect("Failed to create Tokio runtime");
 
-    log::info!("Created Tokio runtime with {} worker threads", async_runtime_worker_threads);
+    log::info!(
+        "Created Tokio runtime with {} worker threads",
+        async_runtime_worker_threads
+    );
 
     // Run the async main logic
     runtime.block_on(start_gateway(setup_configuration));

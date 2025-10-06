@@ -46,7 +46,7 @@ pub struct DocumentDBSetupConfiguration {
     pub dynamic_configuration_refresh_interval_secs: Option<u32>,
     pub postgres_command_timeout_secs: Option<u64>,
     pub postgres_startup_wait_time_seconds: Option<u64>,
-    
+
     // Runtime configuration
     pub async_runtime_worker_threads: Option<usize>,
 }
