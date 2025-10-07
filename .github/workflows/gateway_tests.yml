@@ -150,6 +150,7 @@ jobs:
 
       - name: Check Gateway host formatting and lints
         run: |
+          mkdir -p $HOME/.pgrx
           export PGRX_HOME="$HOME/.pgrx"
           cargo fmt --all --check
           cargo clippy --all-targets -- -D warnings
