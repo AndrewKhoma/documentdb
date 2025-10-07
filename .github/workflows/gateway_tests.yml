@@ -154,7 +154,7 @@ jobs:
       - name: Check Gateway host formatting and lints
         run: |
           cargo fmt --all --check
-          cargo clippy --all-targets -- -D warnings
+          cargo clippy --all-targets --no-default-features --features "pg${{ matrix.pg_version }}" -- -D warnings
         working-directory: pg_documentdb_gw_host
 
       - name: Start DocumentDB service
