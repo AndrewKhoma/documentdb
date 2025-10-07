@@ -148,6 +148,12 @@ jobs:
           cargo clippy --all-targets --all-features -- -D warnings
         working-directory: pg_documentdb_gw
 
+      - name: Check Gateway host formatting and lints
+        run: |
+          cargo fmt --all --check
+          cargo clippy --all-targets -- -D warnings
+        working-directory: pg_documentdb_gw_host
+
       - name: Start DocumentDB service
         run: |
           export PG_VERSION_USED=${{ matrix.pg_version }}
