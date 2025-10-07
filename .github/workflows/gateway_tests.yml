@@ -142,6 +142,9 @@ jobs:
           make
           sudo PATH=$PATH make install
 
+      - name: Install Gateway host
+        run: scripts/build_and_install_with_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
+
       - name: Check Gateway formatting and lints
         run: |
           cargo fmt --all --check
@@ -150,8 +153,6 @@ jobs:
 
       - name: Check Gateway host formatting and lints
         run: |
-          mkdir -p $HOME/.pgrx
-          export PGRX_HOME="$HOME/.pgrx"
           cargo fmt --all --check
           cargo clippy --all-targets -- -D warnings
         working-directory: pg_documentdb_gw_host
