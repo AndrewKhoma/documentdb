@@ -142,7 +142,7 @@ jobs:
           make
           sudo PATH=$PATH make install
 
-      - name: Install Gateway host
+      - name: Build and Install Gateway host
         run: scripts/build_and_install_with_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
 
       - name: Check Gateway formatting and lints
