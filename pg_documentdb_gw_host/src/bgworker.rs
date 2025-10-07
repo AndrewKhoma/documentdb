@@ -81,9 +81,8 @@ async fn run_docdb_gateway(setup_configuration_file: &str) {
 
     let shutdown_token = SHUTDOWN_CONTROLLER.token();
 
-    let setup_configuration = DocumentDBSetupConfiguration::new(&cfg_file)
-        .await
-        .expect("Failed to load configuration.");
+    let setup_configuration =
+        DocumentDBSetupConfiguration::new(&cfg_file).expect("Failed to load configuration.");
 
     log::info!(
         "Starting server with configuration: {:?}",
