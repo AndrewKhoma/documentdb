@@ -124,17 +124,22 @@ jobs:
           cp ./scripts/install_setup_postgis.sh /tmp/install_setup/
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT PGVERSION=$PG_VERSION /tmp/install_setup/install_setup_postgis.sh
 
-      - name: Install Rust
-        run: |
-          export CARGO_HOME=$HOME/.cargo
-          export RUSTUP_HOME=$HOME/.rustup
-
-          ./scripts/install_rustup.sh
-          rustc --version && cargo --version
-      
-      - name: Export pg_config PATH
+      - name: Setup environment
         run: |
           echo "/usr/lib/postgresql/${{ matrix.pg_version }}/bin" >> $GITHUB_PATH
+          echo "PG_VERSION_USED=${{ matrix.pg_version }}" >> $GITHUB_ENV
+
+          echo "CARGO_HOME=$HOME/.cargo" >> $GITHUB_ENV
+          echo "RUSTUP_HOME=$HOME/.rustup" >> $GITHUB_ENV
+          
+          mkdir -p $HOME/.cargo/bin && mkdir -p $HOME/.rustup
+          
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Rust
+        run: |
+          ./scripts/install_rustup.sh
+          rustc --version && cargo --version
 
       - name: Configure, Build and Install DocumentDB
         run: |
@@ -142,36 +147,34 @@ jobs:
           make
           sudo PATH=$PATH make install
 
-      - name: Build and Install Gateway host
+      - name: Install pgrx for Gateway host
         run: scripts/install_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
 
       - name: Check Gateway formatting and lints
+        working-directory: pg_documentdb_gw
         run: |
           cargo fmt --all --check
           cargo clippy --all-targets --all-features -- -D warnings
-        working-directory: pg_documentdb_gw
 
       - name: Check Gateway host formatting and lints
+        working-directory: pg_documentdb_gw_host
         run: |
           cargo fmt --all --check
           cargo clippy --all-targets --no-default-features --features "pg${{ matrix.pg_version }}" -- -D warnings
-        working-directory: pg_documentdb_gw_host
 
       - name: Start DocumentDB service without gw host
         run: |
-          export PG_VERSION_USED=${{ matrix.pg_version }}
           mkdir -p $RUNNER_TEMP/pgdata
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r
           cat $RUNNER_TEMP/pgdata/pglog.log
       
       - name: Run Gateway Tests
+        working-directory: pg_documentdb_gw
         run: |
           cargo test -- --test-threads=1
-        working-directory: pg_documentdb_gw
 
       - name: Stop DocumentDB service
         run: |
-          export PG_VERSION_USED=${{ matrix.pg_version }}
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -s
       
       - name: Build and Install Gateway host
@@ -179,7 +182,6 @@ jobs:
 
       - name: Start DocumentDB service with gw host
         run: |
-          export PG_VERSION_USED=${{ matrix.pg_version }}
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r -g
 
       - name: Create test user for sanity check

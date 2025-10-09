@@ -78,10 +78,12 @@ if ! [[ "$coordinatorPort" =~ ^[0-9]+$ ]] || [ "$coordinatorPort" -lt 0 ] || [ "
     exit 1
 fi
 
-# Check if the port is already in use
-if lsof -i:"$coordinatorPort" -sTCP:LISTEN >/dev/null 2>&1; then
-    echo "${red}Port $coordinatorPort is already in use. Please specify a different port.${reset}"
-    exit 1
+# Check if the port is already in use (skip when stopping)
+if [ "$stop" != "true" ]; then
+  if lsof -i:"$coordinatorPort" -sTCP:LISTEN >/dev/null 2>&1; then
+      echo "${red}Port $coordinatorPort is already in use. Please specify a different port.${reset}"
+      exit 1
+  fi
 fi
 
 if [ "$distributed" == "true" ]; then
