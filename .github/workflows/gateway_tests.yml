@@ -143,7 +143,7 @@ jobs:
           sudo PATH=$PATH make install
 
       - name: Build and Install Gateway host
-        run: scripts/build_and_install_with_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
+        run: scripts/install_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
 
       - name: Check Gateway formatting and lints
         run: |
@@ -157,7 +157,7 @@ jobs:
           cargo clippy --all-targets --no-default-features --features "pg${{ matrix.pg_version }}" -- -D warnings
         working-directory: pg_documentdb_gw_host
 
-      - name: Start DocumentDB service
+      - name: Start DocumentDB service without gw host
         run: |
           export PG_VERSION_USED=${{ matrix.pg_version }}
           mkdir -p $RUNNER_TEMP/pgdata
@@ -168,6 +168,44 @@ jobs:
         run: |
           cargo test -- --test-threads=1
         working-directory: pg_documentdb_gw
+
+      - name: Stop DocumentDB service
+        run: |
+          export PG_VERSION_USED=${{ matrix.pg_version }}
+          ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -s
+      
+      - name: Build and Install Gateway host
+        run: scripts/build_and_install_with_pgrx.sh -v ${{ matrix.pg_version }} -d ./pg_documentdb_gw_host
+
+      - name: Start DocumentDB service with gw host
+        run: |
+          export PG_VERSION_USED=${{ matrix.pg_version }}
+          ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r -g
+
+      - name: Create test user for sanity check
+        run: |
+          psql -d postgres -p 9712 -c 'SELECT documentdb_api.create_user( $cmd$ { "createUser": "testuser", "pwd": "test", "roles": [ {"role":"readWriteAnyDatabase","db":"admin"}, {"role":"clusterAdmin","db":"admin"} ] } $cmd$)'
+
+      - name: Install mongosh
+        run: |
+          MONGOSH_VERSION=2.5.8
+          if [ "${{ matrix.arch }}" = "amd64" ]; then
+            ARCH=linux-x64
+          else
+            ARCH=linux-arm64
+          fi
+
+          curl -sSL -o $RUNNER_TEMP/mongosh.tgz https://github.com/mongodb-js/mongosh/releases/download/v${MONGOSH_VERSION}/mongosh-${MONGOSH_VERSION}-${ARCH}.tgz
+          tar -xzf $RUNNER_TEMP/mongosh.tgz
+          mv $RUNNER_TEMP/mongosh-${MONGOSH_VERSION}-${ARCH}/bin/mongosh $RUNNER_TOOL_CACHE/mongosh
+          chmod +x $RUNNER_TOOL_CACHE/mongosh
+          
+          mongosh --version
+      
+      - name: Run Gateway host Sanity Check
+        run: |
+          mongosh "mongodb://testuser:test@localhost:10260/admin?tls=true&tlsInsecure=true" --tlsAllowInvalidHostnames --tlsAllowInvalidCertificates --eval "db.foo.insertOne({x:1})"
+          mongosh "mongodb://testuser:test@localhost:10260/admin?tls=true&tlsInsecure=true" --tlsAllowInvalidHostnames --tlsAllowInvalidCertificates --eval "db.foo.find()"
 
       - name: Upload Log Files
         if: always() 
