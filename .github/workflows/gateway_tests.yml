@@ -90,9 +90,17 @@ jobs:
           # Install dependencies
           cp ./scripts/setup_versions.sh /tmp/install_setup
 
-          sudo apt purge -y clang-*
-          cp ./scripts/install_llvm.sh /tmp/install_setup/
-          sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT /tmp/install_setup/install_llvm.sh
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 20
+          sudo apt-get install -y clang-tools-20
+          sudo update-alternatives --install /usr/bin/clang++           clang++             /usr/bin/clang++-20         200
+          sudo update-alternatives --install /usr/bin/clang             clang               /usr/bin/clang-20           200
+          sudo update-alternatives --install /usr/bin/clang-scan-deps   clang-scan-deps     /usr/bin/clang-scan-deps-20 200
+          sudo update-alternatives --set clang           /usr/bin/clang-20
+          sudo update-alternatives --set clang++         /usr/bin/clang++-20
+          sudo update-alternatives --set clang-scan-deps /usr/bin/clang-scan-deps-20
+
           cp ./scripts/install_setup_libbson.sh /tmp/install_setup
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT MAKE_PROGRAM=cmake /tmp/install_setup/install_setup_libbson.sh
           cp ./scripts/utils.sh /tmp/install_setup
