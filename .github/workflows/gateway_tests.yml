@@ -124,6 +124,9 @@ jobs:
           cp ./scripts/install_setup_postgis.sh /tmp/install_setup/
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT PGVERSION=$PG_VERSION /tmp/install_setup/install_setup_postgis.sh
 
+          cp ./scripts/install_setup_llvm.sh /tmp/install_setup/
+          sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT /tmp/install_setup/install_setup_llvm.sh
+
       - name: Setup environment
         run: |
           echo "/usr/lib/postgresql/${{ matrix.pg_version }}/bin" >> $GITHUB_PATH
@@ -166,7 +169,6 @@ jobs:
         run: |
           mkdir -p $RUNNER_TEMP/pgdata
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r
-          cat $RUNNER_TEMP/pgdata/pglog.log
       
       - name: Run Gateway Tests
         working-directory: pg_documentdb_gw
@@ -183,7 +185,6 @@ jobs:
       - name: Start DocumentDB service with gw host
         run: |
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r -g
-          cat $RUNNER_TEMP/pgdata/pglog.log
 
       - name: Create test user for sanity check
         run: |
@@ -216,4 +217,6 @@ jobs:
         with:
           name: logs_${{ matrix.runner }}_PG${{ matrix.pg_version }}
           overwrite: true
-          path: "**/*.log"
+          path: |
+            **/*.log
+            $RUNNER_TEMP/pgdata/pglog.log
