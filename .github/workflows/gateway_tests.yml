@@ -124,7 +124,7 @@ jobs:
           cp ./scripts/install_setup_postgis.sh /tmp/install_setup/
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT PGVERSION=$PG_VERSION /tmp/install_setup/install_setup_postgis.sh
 
-          cp ./scripts/install_lvm.sh /tmp/install_setup/
+          cp ./scripts/install_llvm.sh /tmp/install_setup/
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT /tmp/install_setup/install_llvm.sh
 
       - name: Setup environment
