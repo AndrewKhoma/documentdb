@@ -90,6 +90,7 @@ jobs:
           # Install dependencies
           cp ./scripts/setup_versions.sh /tmp/install_setup
 
+          sudo apt purge -y clang
           cp ./scripts/install_llvm.sh /tmp/install_setup/
           sudo INSTALL_DEPENDENCIES_ROOT=$INSTALL_DEPENDENCIES_ROOT /tmp/install_setup/install_llvm.sh
           cp ./scripts/install_setup_libbson.sh /tmp/install_setup
