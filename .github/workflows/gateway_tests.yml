@@ -183,6 +183,7 @@ jobs:
       - name: Start DocumentDB service with gw host
         run: |
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r -g
+          cat $RUNNER_TEMP/pgdata/pglog.log
 
       - name: Create test user for sanity check
         run: |
