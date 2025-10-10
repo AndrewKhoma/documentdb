@@ -194,6 +194,11 @@ jobs:
         run: |
           ./scripts/start_oss_server.sh -d $RUNNER_TEMP/pgdata -c -r -g
 
+      - name: DELETEME cat pgdata/pglog.log
+        if: failure()
+        run: |
+          cat $RUNNER_TEMP/pgdata/pglog.log
+
       - name: Create test user for sanity check
         run: |
           psql -d postgres -p 9712 -c 'SELECT documentdb_api.create_user( $cmd$ { "createUser": "testuser", "pwd": "test", "roles": [ {"role":"readWriteAnyDatabase","db":"admin"}, {"role":"clusterAdmin","db":"admin"} ] } $cmd$)'
